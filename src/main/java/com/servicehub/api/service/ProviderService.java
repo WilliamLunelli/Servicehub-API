@@ -7,6 +7,7 @@ import com.servicehub.api.model.dto.ProviderPatchRequest;
 import com.servicehub.api.model.dto.ProviderRequest;
 import com.servicehub.api.model.dto.ProviderResponse;
 import com.servicehub.api.repository.ProviderRepository;
+import com.servicehub.api.util.InputSanitizer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,8 +23,11 @@ public class ProviderService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProviderResponse> findAll() {
-        return providerRepository.findAll().stream()
+    public List<ProviderResponse> findAll(String specialty) {
+        List<Provider> providers = (specialty == null || specialty.isBlank())
+                ? providerRepository.findAll()
+                : providerRepository.searchBySpecialty(InputSanitizer.clean(specialty));
+        return providers.stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -40,11 +44,11 @@ public class ProviderService {
         }
 
         Provider provider = Provider.builder()
-                .name(request.getName())
+                .name(InputSanitizer.clean(request.getName()))
                 .email(request.getEmail())
                 .phone(request.getPhone())
-                .specialty(request.getSpecialty())
-                .description(request.getDescription())
+                .specialty(InputSanitizer.clean(request.getSpecialty()))
+                .description(InputSanitizer.clean(request.getDescription()))
                 .hourlyRate(request.getHourlyRate())
                 .active(true)
                 .build();
@@ -57,11 +61,11 @@ public class ProviderService {
         Provider provider = getProviderOrThrow(id);
         assertEmailAvailable(request.getEmail(), id);
 
-        provider.setName(request.getName());
+        provider.setName(InputSanitizer.clean(request.getName()));
         provider.setEmail(request.getEmail());
         provider.setPhone(request.getPhone());
-        provider.setSpecialty(request.getSpecialty());
-        provider.setDescription(request.getDescription());
+        provider.setSpecialty(InputSanitizer.clean(request.getSpecialty()));
+        provider.setDescription(InputSanitizer.clean(request.getDescription()));
         provider.setHourlyRate(request.getHourlyRate());
 
         return toResponse(providerRepository.save(provider));
@@ -76,16 +80,16 @@ public class ProviderService {
             provider.setEmail(request.getEmail());
         }
         if (request.getName() != null) {
-            provider.setName(request.getName());
+            provider.setName(InputSanitizer.clean(request.getName()));
         }
         if (request.getPhone() != null) {
             provider.setPhone(request.getPhone());
         }
         if (request.getSpecialty() != null) {
-            provider.setSpecialty(request.getSpecialty());
+            provider.setSpecialty(InputSanitizer.clean(request.getSpecialty()));
         }
         if (request.getDescription() != null) {
-            provider.setDescription(request.getDescription());
+            provider.setDescription(InputSanitizer.clean(request.getDescription()));
         }
         if (request.getHourlyRate() != null) {
             provider.setHourlyRate(request.getHourlyRate());

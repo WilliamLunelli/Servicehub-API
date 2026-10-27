@@ -1,0 +1,17 @@
+type Query {
+    "Lista os prestadores, com filtro opcional por especialidade"
+    providers(specialty: String): [Provider!]!
+    "Busca um prestador pelo id"
+    provider(id: ID!): Provider
+}
+
+type Provider {
+    id: ID!
+    name: String!
+    email: String!
+    phone: String
+    specialty: String!
+    description: String
+    hourlyRate: Float!
+    active: Boolean!
+}
